@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BFF Security - Video Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .slide-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            max-width: 1400px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #60a5fa, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #60a5fa;
+        }
+
+        h3 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #818cf8;
+        }
+
+        p {
+            font-size: 1.5rem;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            color: #cbd5e1;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        li {
+            font-size: 1.5rem;
+            padding: 1rem 0;
+            padding-left: 2rem;
+            position: relative;
+            color: #cbd5e1;
+        }
+
+        li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #60a5fa;
+            font-weight: bold;
+        }
+
+        .highlight {
+            background: rgba(96, 165, 250, 0.2);
+            border-left: 4px solid #60a5fa;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 8px;
+        }
+
+        .code-block {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 2rem;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 1.2rem;
+            line-height: 1.8;
+            overflow-x: auto;
+            margin: 2rem 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .keyword {
+            color: #c678dd;
+        }
+
+        .string {
+            color: #98c379;
+        }
+
+        .function {
+            color: #61afef;
+        }
+
+        .comment {
+            color: #5c6370;
+            font-style: italic;
+        }
+
+        .diagram {
+            background: rgba(15, 23, 42, 0.5);
+            border: 2px solid #334155;
+            border-radius: 16px;
+            padding: 3rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .flow-item {
+            background: rgba(96, 165, 250, 0.1);
+            border: 2px solid #60a5fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            font-size: 1.3rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        .badge.red {
+            background: #ef4444;
+        }
+
+        .badge.yellow {
+            background: #f59e0b;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        button {
+            background: #60a5fa;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(96, 165, 250, 0.3);
+        }
+
+        .slide-number {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            font-size: 1.2rem;
+            color: #64748b;
+        }
+
+        .subtitle {
+            font-size: 1.8rem;
+            color: #94a3b8;
+            margin-bottom: 3rem;
+        }
+
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: start;
+        }
+
+        .checkmark {
+            color: #10b981;
+            font-size: 2rem;
+            margin-right: 1rem;
+        }
+
+        .warning {
+            color: #f59e0b;
+            font-size: 2rem;
+            margin-right: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- SLIDE 1: INTRO -->
+        <div class="slide active" id="slide-1">
+            <div style="text-align: center;">
+                <div class="icon">🔐</div>
+                <h1>Backend For Frontend (BFF)</h1>
+                <p class="subtitle">Arquitectura de Seguridad Multicapa</p>
+                <p style="font-size: 2rem; margin-top: 3rem;">Santiago Fernández</p>
+                <p style="font-size: 1.3rem; color: #64748b;">Arquitectura aplicable a fintech, e-commerce, salud, SaaS, logística...</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: EL PROBLEMA -->
+        <div class="slide" id="slide-2">
+            <h2>❌ El Problema: Arquitectura Insegura</h2>
+            <div class="diagram">
+                <div class="flow-item">Frontend → Microservicio Saldo (directo)</div>
+                <div class="flow-item">Frontend → Microservicio Usuario (directo)</div>
+                <div class="flow-item">Frontend → Microservicio Préstamos (directo)</div>
+                <div class="flow-item">Frontend → Microservicio Tarjetas (directo)</div>
+            </div>
+            <ul>
+                <li><span class="warning">⚠️</span> Superficie de ataque amplia</li>
+                <li><span class="warning">⚠️</span> Sin control centralizado</li>
+                <li><span class="warning">⚠️</span> Gestión de tokens compleja</li>
+                <li><span class="warning">⚠️</span> Múltiples llamadas = alta latencia</li>
+            </ul>
+        </div>
+
+        <!-- SLIDE 3: LA SOLUCIÓN -->
+        <div class="slide" id="slide-3">
+            <h2>✅ La Solución: Backend For Frontend</h2>
+            <div class="diagram">
+                <div class="flow-item" style="background: rgba(16, 185, 129, 0.1); border-color: #10b981;">
+                    Usuario → Frontend → <strong>BFF</strong> → Microservicios
+                </div>
+                <div style="margin: 2rem 0; font-size: 2rem;">⬇️</div>
+                <div class="flow-item" style="background: rgba(96, 165, 250, 0.1);">
+                    Keycloak (CIAM)
+                </div>
+            </div>
+            <div class="grid">
+                <div class="card">
+                    <h3>✓ Punto único de entrada</h3>
+                    <p>Todas las peticiones pasan por el BFF</p>
+                </div>
+                <div class="card">
+                    <h3>✓ Validación centralizada</h3>
+                    <p>Tokens, permisos, rate limiting</p>
+                </div>
+                <div class="card">
+                    <h3>✓ Agregación de datos</h3>
+                    <p>El BFF combina respuestas</p>
+                </div>
+                <div class="card">
+                    <h3>✓ Microservicios protegidos</h3>
+                    <p>Solo el BFF puede acceder</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: 10 CAPAS -->
+        <div class="slide" id="slide-4">
+            <h2>🛡️ 10 Capas de Seguridad</h2>
+            <div class="grid">
+                <div class="card">
+                    <span class="badge">1</span> OAuth2 + OIDC con Keycloak
+                </div>
+                <div class="card">
+                    <span class="badge">2</span> PKCE (Proof Key for Code Exchange)
+                </div>
+                <div class="card">
+                    <span class="badge">3</span> Doble validación de tokens
+                </div>
+                <div class="card">
+                    <span class="badge">4</span> mTLS (Mutual TLS)
+                </div>
+                <div class="card">
+                    <span class="badge">5</span> Rate Limiting
+                </div>
+                <div class="card">
+                    <span class="badge">6</span> Circuit Breaker
+                </div>
+                <div class="card">
+                    <span class="badge">7</span> Security Headers (Helmet)
+                </div>
+                <div class="card">
+                    <span class="badge">8</span> CORS Restrictivo
+                </div>
+                <div class="card">
+                    <span class="badge">9</span> Data Masking en Logs
+                </div>
+                <div class="card">
+                    <span class="badge">10</span> Input Validation (Zod)
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: OAUTH2 -->
+        <div class="slide" id="slide-5">
+            <h2>Capa 1: OAuth2 + OIDC</h2>
+            <div class="diagram">
+                <div class="flow-item">1. Usuario → Frontend: Click "Login"</div>
+                <div class="flow-item">2. Frontend → Keycloak: Redirect</div>
+                <div class="flow-item">3. Usuario → Keycloak: Credenciales</div>
+                <div class="flow-item">4. Keycloak → Frontend: Authorization Code</div>
+                <div class="flow-item">5. Frontend → Keycloak: Code + PKCE</div>
+                <div class="flow-item" style="background: rgba(16, 185, 129, 0.1); border-color: #10b981;">
+                    6. Keycloak → Frontend: Access Token + Refresh Token
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: PKCE CODE -->
+        <div class="slide" id="slide-6">
+            <h2>Capa 2: PKCE en el Frontend</h2>
+            <div class="code-block">
+<span class="comment">// Frontend - Keycloak config</span>
+<span class="keyword">const</span> keycloak = <span class="keyword">new</span> <span class="function">Keycloak</span>({
+  url: <span class="string">'http://localhost:8080'</span>,
+  realm: <span class="string">'financial-banking'</span>,
+  clientId: <span class="string">'frontend-banking'</span>,
+})
+
+<span class="comment">// Inicializar con PKCE</span>
+<span class="keyword">await</span> keycloak.<span class="function">init</span>({
+  onLoad: <span class="string">'check-sso'</span>,
+  pkceMethod: <span class="string">'S256'</span>, <span class="comment">// ✅ SHA-256</span>
+})
+            </div>
+            <div class="highlight">
+                <p><strong>¿Por qué PKCE?</strong></p>
+                <p>Sin PKCE, un atacante podría interceptar el authorization code. PKCE añade un code_verifier que solo el cliente conoce.</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: DOBLE VALIDACIÓN -->
+        <div class="slide" id="slide-7">
+            <h2>Capa 3: Doble Validación de Tokens</h2>
+            <p style="font-size: 1.8rem; margin-bottom: 2rem;">🔑 La clave de la seguridad del BFF</p>
+            <div class="two-column">
+                <div>
+                    <h3>Token 1: User Token</h3>
+                    <div class="code-block" style="font-size: 1rem;">
+Header: X-User-Token
+eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+                    </div>
+                    <p>Indica <strong>quién</strong> es el usuario</p>
+                </div>
+                <div>
+                    <h3>Token 2: Service Token</h3>
+                    <div class="code-block" style="font-size: 1rem;">
+Header: Authorization: Bearer
+eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+                    </div>
+                    <p>Indica que viene del <strong>BFF</strong></p>
+                </div>
+            </div>
+            <div class="highlight" style="margin-top: 2rem;">
+                <p><strong>Seguridad:</strong> Si un atacante roba el User Token, no puede usarlo directamente contra los microservicios. Necesita también el Service Token que solo tiene el BFF.</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: BFF CODE -->
+        <div class="slide" id="slide-8">
+            <h2>BFF: Obtener Service Token</h2>
+            <div class="code-block">
+<span class="comment">// BFF - Obtener Service Token (Client Credentials)</span>
+<span class="keyword">export const</span> <span class="function">getServiceToken</span> = <span class="keyword">async</span> () => {
+  <span class="keyword">const</span> response = <span class="keyword">await</span> axios.<span class="function">post</span>(
+    <span class="string">`${keycloakUrl}/realms/${realm}/protocol/openid-connect/token`</span>,
+    <span class="keyword">new</span> <span class="function">URLSearchParams</span>({
+      grant_type: <span class="string">'client_credentials'</span>,
+      client_id: <span class="string">'bff-banking'</span>,
+      client_secret: process.env.BFF_CLIENT_SECRET,
+    })
+  )
+  
+  <span class="keyword">return</span> response.data.access_token
+}
+
+<span class="comment">// BFF - Llamada a microservicio</span>
+<span class="keyword">const</span> response = <span class="keyword">await</span> axios.<span class="function">get</span>(<span class="string">'http://saldo-service:3001/api/saldo/cuentas'</span>, {
+  headers: {
+    <span class="string">'Authorization'</span>: <span class="string">`Bearer ${serviceToken}`</span>, <span class="comment">// Token del BFF</span>
+    <span class="string">'X-User-Token'</span>: userToken, <span class="comment">// Token del usuario</span>
+  }
+})
+            </div>
+        </div>
+
+        <!-- SLIDE 9: MICROSERVICE VALIDATION -->
+        <div class="slide" id="slide-9">
+            <h2>Microservicio: Validación Doble</h2>
+            <div class="code-block">
+<span class="comment">// Middleware 1: Validar Service Token</span>
+<span class="keyword">const</span> <span class="function">validateServiceToken</span> = (req, res, next) => {
+  <span class="keyword">const</span> token = req.headers[<span class="string">'authorization'</span>]?.<span class="function">replace</span>(<span class="string">'Bearer '</span>, <span class="string">''</span>)
+  
+  jwt.<span class="function">verify</span>(token, getPublicKey(), (err, decoded) => {
+    <span class="keyword">if</span> (err) <span class="keyword">return</span> res.<span class="function">status</span>(401).<span class="function">json</span>({ error: <span class="string">'Invalid token'</span> })
+    
+    <span class="comment">// Verificar que es el BFF</span>
+    <span class="keyword">if</span> (!decoded.azp === <span class="string">'bff-banking'</span>) {
+      <span class="keyword">return</span> res.<span class="function">status</span>(403).<span class="function">json</span>({ error: <span class="string">'Unauthorized service'</span> })
+    }
+    
+    <span class="function">next</span>()
+  })
+}
+
+<span class="comment">// Middleware 2: Validar User Token</span>
+<span class="keyword">const</span> <span class="function">validateUserToken</span> = (req, res, next) => {
+  <span class="keyword">const</span> userToken = req.headers[<span class="string">'x-user-token'</span>]
+  jwt.<span class="function">verify</span>(userToken, getPublicKey(), (err, decoded) => {
+    req.user = decoded <span class="comment">// Datos del usuario para RBAC</span>
+    <span class="function">next</span>()
+  })
+}
+            </div>
+        </div>
+
+        <!-- SLIDE 10: mTLS -->
+        <div class="slide" id="slide-10">
+            <h2>Capa 4: mTLS (Mutual TLS)</h2>
+            <p>Los microservicios solo aceptan conexiones del BFF usando certificados mutuos</p>
+            <div class="code-block">
+<span class="comment">// BFF - Cliente HTTP con certificados</span>
+<span class="keyword">const</span> saldoClient = axios.<span class="function">create</span>({
+  baseURL: <span class="string">'https://saldo-service:3001'</span>,
+  httpsAgent: <span class="keyword">new</span> https.<span class="function">Agent</span>({
+    cert: fs.<span class="function">readFileSync</span>(<span class="string">'/app/certs/bff.crt'</span>),
+    key: fs.<span class="function">readFileSync</span>(<span class="string">'/app/certs/bff.key'</span>),
+    ca: fs.<span class="function">readFileSync</span>(<span class="string">'/app/certs/ca.crt'</span>),
+    rejectUnauthorized: <span class="keyword">true</span>, <span class="comment">// ✅ Verificar certificado</span>
+  })
+})
+            </div>
+            <div class="highlight">
+                <p>Cada servicio tiene su propio certificado firmado por nuestra CA. Solo conexiones con certificado válido pueden comunicarse.</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: RATE LIMITING -->
+        <div class="slide" id="slide-11">
+            <h2>Capa 5: Rate Limiting</h2>
+            <div class="code-block">
+<span class="keyword">import</span> rateLimit <span class="keyword">from</span> <span class="string">'express-rate-limit'</span>
+
+<span class="keyword">const</span> limiter = <span class="function">rateLimit</span>({
+  windowMs: 15 * 60 * 1000, <span class="comment">// 15 minutos</span>
+  max: 100, <span class="comment">// 100 requests por ventana</span>
+  message: {
+    error: <span class="string">'Too Many Requests'</span>,
+    message: <span class="string">'Demasiadas peticiones, intenta más tarde.'</span>,
+  },
+  standardHeaders: <span class="keyword">true</span>,
+})
+
+app.<span class="function">use</span>(<span class="string">'/api/'</span>, limiter)
+            </div>
+            <div class="highlight">
+                <p>Protección contra ataques de fuerza bruta y abuso. Máximo 100 requests cada 15 minutos por cliente.</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: CIRCUIT BREAKER -->
+        <div class="slide" id="slide-12">
+            <h2>Capa 6: Circuit Breaker</h2>
+            <div class="diagram">
+                <div class="flow-item" style="background: rgba(16, 185, 129, 0.1); border-color: #10b981;">
+                    <strong>CLOSED</strong>: Todo funciona normalmente
+                </div>
+                <div class="flow-item" style="background: rgba(239, 68, 68, 0.1); border-color: #ef4444;">
+                    <strong>OPEN</strong>: Servicio falla, se bloquean peticiones
+                </div>
+                <div class="flow-item" style="background: rgba(245, 158, 11, 0.1); border-color: #f59e0b;">
+                    <strong>HALF-OPEN</strong>: Probando si el servicio se recuperó
+                </div>
+            </div>
+            <div class="code-block">
+<span class="keyword">const</span> breaker = <span class="keyword">new</span> <span class="function">CircuitBreaker</span>(asyncFunction, {
+  timeout: 5000, <span class="comment">// 5 segundos</span>
+  errorThresholdPercentage: 50, <span class="comment">// Abrir tras 50% errores</span>
+  resetTimeout: 30000, <span class="comment">// Reintentar tras 30 seg</span>
+})
+            </div>
+        </div>
+
+        <!-- SLIDE 13: HEADERS + CORS -->
+        <div class="slide" id="slide-13">
+            <h2>Capas 7 y 8: Security Headers + CORS</h2>
+            <div class="two-column">
+                <div>
+                    <h3>Helmet (Security Headers)</h3>
+                    <div class="code-block" style="font-size: 1rem;">
+app.<span class="function">use</span>(<span class="function">helmet</span>({
+  contentSecurityPolicy: { ... },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: <span class="keyword">true</span>,
+  },
+}))
+                    </div>
+                    <ul style="font-size: 1.2rem;">
+                        <li>X-Frame-Options: DENY</li>
+                        <li>X-Content-Type-Options: nosniff</li>
+                        <li>Strict-Transport-Security</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>CORS Restrictivo</h3>
+                    <div class="code-block" style="font-size: 1rem;">
+<span class="keyword">const</span> allowedOrigins = [
+  <span class="string">'http://localhost:5173'</span>
+]
+
+app.<span class="function">use</span>(<span class="function">cors</span>({
+  origin: (origin, callback) => {
+    <span class="keyword">if</span> (allowedOrigins.<span class="function">includes</span>(origin)) {
+      <span class="function">callback</span>(<span class="keyword">null</span>, <span class="keyword">true</span>)
+    }
+  },
+  credentials: <span class="keyword">true</span>,
+}))
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 14: DATA MASKING -->
+        <div class="slide" id="slide-14">
+            <h2>Capa 9: Data Masking en Logs</h2>
+            <p>NUNCA loguear datos sensibles completos</p>
+            <div class="code-block">
+<span class="keyword">const</span> <span class="function">maskSensitiveData</span> = (data) => {
+  <span class="keyword">const</span> sensitiveFields = [<span class="string">'password'</span>, <span class="string">'token'</span>, <span class="string">'cvv'</span>, <span class="string">'card_number'</span>]
+  
+  <span class="keyword">for</span> (<span class="keyword">const</span> key <span class="keyword">in</span> data) {
+    <span class="keyword">if</span> (key.<span class="function">includes</span>(<span class="string">'token'</span>)) {
+      data[key] = data[key].<span class="function">substring</span>(0, 8) + <span class="string">'***'</span> <span class="comment">// Solo primeros 8</span>
+    } <span class="keyword">else if</span> (key.<span class="function">includes</span>(<span class="string">'card'</span>)) {
+      data[key] = <span class="string">'****'</span> + data[key].<span class="function">slice</span>(-4) <span class="comment">// Solo últimos 4</span>
+    }
+  }
+}
+
+logger.<span class="function">info</span>(<span class="string">'User login'</span>, <span class="function">maskSensitiveData</span>({ 
+  userId: <span class="string">'123'</span>,
+  token: <span class="string">'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...'</span>,
+  cardNumber: <span class="string">'4532-1234-5678-9001'</span>
+}))
+<span class="comment">// Output: { userId: '123', token: 'eyJhbGci***', cardNumber: '****9001' }</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 15: INPUT VALIDATION -->
+        <div class="slide" id="slide-15">
+            <h2>Capa 10: Input Validation con Zod</h2>
+            <div class="code-block">
+<span class="keyword">import</span> { z } <span class="keyword">from</span> <span class="string">'zod'</span>
+
+<span class="keyword">const</span> SaldoQuerySchema = z.<span class="function">object</span>({
+  userId: z.<span class="function">string</span>().<span class="function">uuid</span>(),
+  periodo: z.<span class="function">enum</span>([<span class="string">'dia'</span>, <span class="string">'semana'</span>, <span class="string">'mes'</span>, <span class="string">'año'</span>]).<span class="function">optional</span>(),
+  limit: z.<span class="function">number</span>().<span class="function">min</span>(1).<span class="function">max</span>(100).<span class="function">optional</span>(),
+})
+
+app.<span class="function">get</span>(<span class="string">'/api/saldo'</span>, <span class="keyword">async</span> (req, res) => {
+  <span class="keyword">try</span> {
+    <span class="keyword">const</span> query = SaldoQuerySchema.<span class="function">parse</span>(req.query)
+    <span class="comment">// ✅ Query validado y tipado</span>
+    <span class="keyword">const</span> saldo = <span class="keyword">await</span> <span class="function">getSaldo</span>(query.userId, query.periodo)
+    res.<span class="function">json</span>(saldo)
+  } <span class="keyword">catch</span> (error) {
+    <span class="keyword">if</span> (error <span class="keyword">instanceof</span> z.ZodError) {
+      <span class="keyword">return</span> res.<span class="function">status</span>(400).<span class="function">json</span>({
+        error: <span class="string">'Invalid input'</span>,
+        details: error.errors,
+      })
+    }
+  }
+})
+            </div>
+        </div>
+
+        <!-- SLIDE 16: FLUJO COMPLETO -->
+        <div class="slide" id="slide-16">
+            <h2>🔄 Flujo Completo: Dashboard Request</h2>
+            <div class="diagram">
+                <div class="flow-item">1. Usuario accede /dashboard</div>
+                <div class="flow-item">2. Frontend → BFF (user token)</div>
+                <div class="flow-item">3. BFF valida user token ✅</div>
+                <div class="flow-item">4. BFF verifica rate limit ✅</div>
+                <div class="flow-item">5. BFF obtiene service token</div>
+                <div class="flow-item" style="background: rgba(96, 165, 250, 0.1);">
+                    6. BFF → 4 microservicios en paralelo (circuit breaker)
+                </div>
+                <div class="flow-item">7. Cada microservicio: valida service token + user token ✅</div>
+                <div class="flow-item">8. BFF agrega respuestas</div>
+                <div class="flow-item">9. BFF aplica data masking en logs</div>
+                <div class="flow-item" style="background: rgba(16, 185, 129, 0.1); border-color: #10b981;">
+                    10. Frontend recibe dashboard completo
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 17: DASHBOARD CODE -->
+        <div class="slide" id="slide-17">
+            <h2>Endpoint Dashboard en el BFF</h2>
+            <div class="code-block">
+router.<span class="function">get</span>(<span class="string">'/'</span>, validateAuth, <span class="keyword">async</span> (req, res) => {
+  <span class="keyword">const</span> userToken = req.userToken
+  <span class="keyword">const</span> serviceToken = <span class="keyword">await</span> <span class="function">getServiceToken</span>()
+  
+  <span class="comment">// Llamadas paralelas con circuit breaker</span>
+  <span class="keyword">const</span> [saldoResult, usuarioResult, prestamosResult, tarjetasResult] = 
+    <span class="keyword">await</span> Promise.<span class="function">allSettled</span>([
+      saldoBreaker.<span class="function">fire</span>(<span class="string">'/api/saldo/cuentas'</span>, {
+        headers: { <span class="string">'X-User-Token'</span>: userToken }
+      }),
+      usuarioBreaker.<span class="function">fire</span>(<span class="string">'/api/usuario/perfil'</span>, {
+        headers: { <span class="string">'X-User-Token'</span>: userToken }
+      }),
+      <span class="comment">// ... otros servicios</span>
+    ])
+  
+  <span class="comment">// Agregar respuestas</span>
+  <span class="keyword">const</span> dashboard = {
+    user: usuarioResult.status === <span class="string">'fulfilled'</span> ? usuarioResult.value.data : <span class="keyword">null</span>,
+    saldo: saldoResult.status === <span class="string">'fulfilled'</span> ? saldoResult.value.data : <span class="keyword">null</span>,
+    <span class="comment">// ...</span>
+  }
+  
+  res.<span class="function">json</span>({ success: <span class="keyword">true</span>, data: dashboard })
+})
+            </div>
+        </div>
+
+        <!-- SLIDE 18: COMPLIANCE -->
+        <div class="slide" id="slide-18">
+            <h2>📝 Compliance: PCI DSS</h2>
+            <p>Para aplicaciones financieras que manejan tarjetas:</p>
+            <div class="grid">
+                <div class="card">
+                    <span class="checkmark">✓</span> Nunca almacenar CVV/CVC
+                </div>
+                <div class="card">
+                    <span class="checkmark">✓</span> Encriptación en tránsito (TLS 1.3 + mTLS)
+                </div>
+                <div class="card">
+                    <span class="checkmark">✓</span> Encriptación en reposo (PostgreSQL)
+                </div>
+                <div class="card">
+                    <span class="checkmark">✓</span> Logging y auditoría completa
+                </div>
+                <div class="card">
+                    <span class="checkmark">✓</span> Segregación de redes (Docker)
+                </div>
+                <div class="card">
+                    <span class="checkmark">✓</span> Rate limiting (anti brute-force)
+                </div>
+                <div class="card">
+                    <span class="checkmark">✓</span> Strong authentication (OAuth2)
+                </div>
+                <div class="card">
+                    <span class="checkmark">✓</span> Soporte MFA (Keycloak)
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 19: DATABASE PER SERVICE -->
+        <div class="slide" id="slide-19">
+            <h2>💾 Database Per Service Pattern</h2>
+            <div class="diagram">
+                <div class="grid" style="grid-template-columns: repeat(2, 1fr);">
+                    <div class="flow-item">Saldo Service → PostgreSQL (saldo_db)</div>
+                    <div class="flow-item">Usuario Service → PostgreSQL (usuario_db)</div>
+                    <div class="flow-item">Préstamos Service → PostgreSQL (prestamos_db)</div>
+                    <div class="flow-item">Tarjetas Service → PostgreSQL (tarjetas_db)</div>
+                </div>
+            </div>
+            <ul style="margin-top: 2rem;">
+                <li><span class="checkmark">✓</span> Independencia entre servicios</li>
+                <li><span class="checkmark">✓</span> Escalado independiente</li>
+                <li><span class="checkmark">✓</span> Fallo aislado (resilencia)</li>
+                <li><span class="checkmark">✓</span> Diferentes tecnologías si es necesario</li>
+            </ul>
+        </div>
+
+        <!-- SLIDE 20: CIERRE -->
+        <div class="slide" id="slide-20">
+            <h2>🎯 Puntos Clave</h2>
+            <div class="highlight" style="font-size: 1.4rem;">
+                <ul>
+                    <li><span class="checkmark">✓</span> Nunca exponer microservicios directamente al frontend</li>
+                    <li><span class="checkmark">✓</span> Doble validación de tokens: user token + service token</li>
+                    <li><span class="checkmark">✓</span> mTLS para comunicación service-to-service</li>
+                    <li><span class="checkmark">✓</span> Rate limiting y circuit breakers para resiliencia</li>
+                    <li><span class="checkmark">✓</span> Logging con data masking para compliance</li>
+                    <li><span class="checkmark">✓</span> Input validation en todos los endpoints</li>
+                    <li><span class="checkmark">✓</span> Security headers y CORS restrictivo</li>
+                </ul>
+            </div>
+            <p style="margin-top: 3rem; font-size: 2rem; text-align: center;">
+                La seguridad no es un feature,<br>
+                <strong style="color: #60a5fa;">es un requisito fundamental</strong>
+            </p>
+        </div>
+
+        <!-- SLIDE 21: RECURSOS -->
+        <div class="slide" id="slide-21">
+            <div style="text-align: center;">
+                <h2>📚 Recursos</h2>
+                <div class="card" style="margin: 3rem auto; max-width: 800px; text-align: left;">
+                    <ul style="font-size: 1.4rem;">
+                        <li>📦 Código completo en GitHub</li>
+                        <li>🎨 Diagrama interactivo de arquitectura</li>
+                        <li>📝 Artículo completo en Hashnode</li>
+                        <li>🔗 OAuth2/OIDC: oauth.net/2/</li>
+                        <li>🔒 Keycloak: keycloak.org</li>
+                        <li>💳 PCI DSS: pcisecuritystandards.org</li>
+                        <li>🛡️ OWASP Top 10: owasp.org</li>
+                    </ul>
+                </div>
+                <p style="font-size: 2.5rem; margin-top: 4rem;">¡Gracias!</p>
+                <p style="font-size: 1.5rem; color: #64748b;">Santiago Fernández</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide-number">
+        <span id="current-slide">1</span> / <span id="total-slides">21</span>
+    </div>
+
+    <div class="controls">
+        <button onclick="previousSlide()">← Anterior</button>
+        <button onclick="nextSlide()">Siguiente →</button>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = document.querySelectorAll('.slide').length;
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            if (n > totalSlides) currentSlide = totalSlides;
+            if (n < 1) currentSlide = 1;
+            
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[currentSlide - 1].classList.add('active');
+            
+            document.getElementById('current-slide').textContent = currentSlide;
+        }
+
+        function nextSlide() {
+            currentSlide++;
+            if (currentSlide > totalSlides) currentSlide = totalSlides;
+            showSlide(currentSlide);
+        }
+
+        function previousSlide() {
+            currentSlide--;
+            if (currentSlide < 1) currentSlide = 1;
+            showSlide(currentSlide);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            if (e.key === 'ArrowLeft') previousSlide();
+        });
+
+        // Initialize
+        showSlide(currentSlide);
+    </script>
+</body>
+</html>

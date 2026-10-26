@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¿Para Qué Sirve un BFF? - 90 Segundos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            overflow: hidden;
+            line-height: 1.6;
+        }
+
+        .slide-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            max-width: 1800px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 5rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #60a5fa, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: #60a5fa;
+        }
+
+        h3 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #818cf8;
+        }
+
+        p {
+            font-size: 1.8rem;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            color: #cbd5e1;
+        }
+
+        .subtitle {
+            font-size: 2.5rem;
+            color: #94a3b8;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .icon {
+            font-size: 6rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: start;
+        }
+
+        .code-block {
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 16px;
+            padding: 2rem;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .terminal {
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 12px;
+            padding: 2rem;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 1.3rem;
+            line-height: 1.8;
+            margin: 1.5rem 0;
+        }
+
+        .network-tab {
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        .network-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: rgba(51, 65, 85, 0.3);
+            border-radius: 8px;
+            font-family: 'Monaco', monospace;
+            font-size: 1.2rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 0.5rem;
+        }
+
+        .badge.red {
+            background: #ef4444;
+            color: white;
+        }
+
+        .badge.green {
+            background: #10b981;
+            color: white;
+        }
+
+        .badge.blue {
+            background: #60a5fa;
+            color: white;
+        }
+
+        .diagram {
+            background: rgba(15, 23, 42, 0.5);
+            border: 2px solid #334155;
+            border-radius: 16px;
+            padding: 3rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .flow-box {
+            background: rgba(96, 165, 250, 0.1);
+            border: 2px solid #60a5fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .highlight-box {
+            background: rgba(96, 165, 250, 0.1);
+            border-left: 5px solid #60a5fa;
+            padding: 2rem;
+            margin: 2rem 0;
+            border-radius: 8px;
+            font-size: 1.6rem;
+        }
+
+        .overlay-box {
+            background: #0f172a;
+            border: 3px solid #60a5fa;
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 3rem auto;
+            max-width: 900px;
+            box-shadow: 0 10px 40px rgba(96, 165, 250, 0.3);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .warning { color: #f59e0b; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .primary { color: #60a5fa; }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        button {
+            background: #60a5fa;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(96, 165, 250, 0.3);
+        }
+
+        .slide-number {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            font-size: 1.5rem;
+            color: #64748b;
+            z-index: 1000;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            font-size: 1.6rem;
+            padding: 0.8rem 0;
+            padding-left: 3rem;
+            position: relative;
+        }
+
+        li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #60a5fa;
+            font-weight: bold;
+            font-size: 2rem;
+        }
+
+        .checkmark { color: #10b981; font-size: 2rem; }
+        .xmark { color: #ef4444; font-size: 2rem; }
+
+        /* Syntax highlighting */
+        .keyword { color: #c678dd; }
+        .string { color: #98c379; }
+        .function { color: #61afef; }
+        .comment { color: #5c6370; font-style: italic; }
+        .number { color: #d19a66; }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- SLIDE 1: INTRO -->
+        <div class="slide active" id="slide-1">
+            <div style="text-align: center;">
+                <div class="icon">🔐</div>
+                <h1>¿Para Qué Sirve un BFF?</h1>
+                <p class="subtitle">Backend For Frontend en Acción</p>
+                <p style="font-size: 2rem; color: #94a3b8; margin-top: 4rem;">
+                    90 segundos que cambiarán tu arquitectura
+                </p>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: PROBLEMA SIN BFF -->
+        <div class="slide" id="slide-2">
+            <h2><span class="xmark">❌</span> El Problema: Sin BFF</h2>
+            
+            <div class="split">
+                <!-- DevTools Network Tab -->
+                <div>
+                    <h3 style="color: #cbd5e1; font-size: 1.8rem;">🌐 Chrome DevTools - Network</h3>
+                    <div class="network-tab">
+                        <div class="network-item" style="border-left: 4px solid #ef4444;">
+                            GET /saldo/cuentas <span style="margin-left: auto;">200 2.1s <span class="xmark">❌</span></span>
+                        </div>
+                        <div class="network-item" style="border-left: 4px solid #ef4444;">
+                            GET /usuario/perfil <span style="margin-left: auto;">200 1.8s <span class="xmark">❌</span></span>
+                        </div>
+                        <div class="network-item" style="border-left: 4px solid #ef4444;">
+                            GET /prestamos/resumen <span style="margin-left: auto;">200 2.3s <span class="xmark">❌</span></span>
+                        </div>
+                        <div class="network-item" style="border-left: 4px solid #ef4444;">
+                            GET /tarjetas/resumen <span style="margin-left: auto;">200 1.9s <span class="xmark">❌</span></span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1.5rem;">
+                        <span class="badge red">4 requests separadas</span>
+                        <span class="badge red">Tiempo total: 8.1s</span>
+                    </div>
+                </div>
+
+                <!-- Código Vulnerable -->
+                <div>
+                    <h3 style="color: #cbd5e1; font-size: 1.8rem;">Frontend sin protección</h3>
+                    <div class="code-block">
+<span class="comment">// ❌ Frontend expuesto</span>
+
+<span class="comment">// Llamada 1</span>
+<span class="function">fetch</span>(<span class="string">'http://saldo-service/api/cuentas'</span>, {
+  headers: { 
+    <span class="string">'Authorization'</span>: <span class="string">'Bearer TOKEN'</span>
+  }
+})
+
+<span class="comment">// Llamada 2</span>
+<span class="function">fetch</span>(<span class="string">'http://usuario-service/api/perfil'</span>, ...)
+
+<span class="comment">// Llamada 3</span>
+<span class="function">fetch</span>(<span class="string">'http://prestamos-service/resumen'</span>, ...)
+
+<span class="comment">// Llamada 4</span>
+<span class="function">fetch</span>(<span class="string">'http://tarjetas-service/resumen'</span>, ...)
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem;">
+                <span class="badge red">Microservicios expuestos</span>
+                <span class="badge red">Tokens visibles</span>
+                <span class="badge red">Sin control centralizado</span>
+                <span class="badge red">Superficie de ataque amplia</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: SOLUCIÓN CON BFF -->
+        <div class="slide" id="slide-3">
+            <h2><span class="checkmark">✅</span> La Solución: Con BFF</h2>
+
+            <!-- DevTools Limpio -->
+            <div style="margin-bottom: 2rem;">
+                <h3 style="color: #cbd5e1; font-size: 1.8rem;">🌐 Chrome DevTools - Network</h3>
+                <div class="network-tab">
+                    <div class="network-item" style="border-left: 4px solid #10b981;">
+                        GET /api/dashboard <span style="margin-left: auto;">200 1.2s <span class="checkmark">✅</span></span>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <span class="badge green">1 sola llamada agregada</span>
+                    <span class="badge green">6x más rápido</span>
+                </div>
+            </div>
+
+            <!-- Diagrama -->
+            <div class="diagram">
+                <div style="font-size: 1.8rem; margin-bottom: 2rem;">
+                    <strong>Frontend</strong> → <strong class="primary">🛡️ BFF</strong> → 
+                    <span style="color: #10b981;">Saldo</span> + 
+                    <span style="color: #10b981;">Usuario</span> + 
+                    <span style="color: #10b981;">Préstamos</span> + 
+                    <span style="color: #10b981;">Tarjetas</span>
+                </div>
+                <div style="font-size: 1.8rem;">
+                    ↓<br>
+                    <strong class="primary">Keycloak</strong> (CIAM)
+                </div>
+            </div>
+
+            <!-- Código del BFF (compacto) -->
+            <div class="code-block">
+<span class="comment">// ✅ BFF: Endpoint agregado con doble validación</span>
+
+router.<span class="function">get</span>(<span class="string">'/dashboard'</span>, validateAuth, <span class="keyword">async</span> (req, res) => {
+  <span class="keyword">const</span> userToken = req.userToken
+  <span class="keyword">const</span> serviceToken = <span class="keyword">await</span> <span class="function">getServiceToken</span>() <span class="comment">// 🔑</span>
+  
+  <span class="comment">// Llamadas PARALELAS con doble validación</span>
+  <span class="keyword">const</span> [saldo, usuario, prestamos, tarjetas] = 
+    <span class="keyword">await</span> Promise.<span class="function">allSettled</span>([
+      <span class="function">saldoService</span>({ 
+        <span class="string">'Authorization'</span>: serviceToken,  <span class="comment">// Token del BFF</span>
+        <span class="string">'X-User-Token'</span>: userToken        <span class="comment">// Token del usuario</span>
+      }),
+      <span class="comment">// ... otros 3 servicios</span>
+    ])
+  
+  res.<span class="function">json</span>({ user, saldo, prestamos, tarjetas })
+})
+            </div>
+
+            <div style="margin-top: 2rem;">
+                <span class="badge green">Doble validación</span>
+                <span class="badge green">Microservicios protegidos</span>
+                <span class="badge green">Agregación de datos</span>
+                <span class="badge green">Rate limiting</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: ATAQUE BLOQUEADO -->
+        <div class="slide" id="slide-4">
+            <h2>🛡️ Demo: Ataque Bloqueado</h2>
+
+            <div class="grid-2">
+                <!-- Sin BFF - Vulnerable -->
+                <div class="card" style="border: 3px solid #ef4444;">
+                    <h3 style="color: #ef4444;">❌ Sin BFF (Vulnerable)</h3>
+                    <div class="terminal">
+<span class="comment">$ curl saldo-service/cuentas \</span>
+<span class="comment">  -H "Auth: Bearer USER_TOKEN"</span>
+
+<span class="success">✅ 200 OK</span>
+{
+  "cuentas": [
+    { "saldo": <span class="number">45000</span> }
+  ]
+}
+
+<span class="error">❌ ACCESO PERMITIDO</span>
+<span class="error">   VULNERABLE!</span>
+                    </div>
+                </div>
+
+                <!-- Con BFF - Protegido -->
+                <div class="card" style="border: 3px solid #10b981;">
+                    <h3 style="color: #10b981;">✅ Con BFF (Protegido)</h3>
+                    <div class="terminal">
+<span class="comment">$ curl saldo-service/cuentas \</span>
+<span class="comment">  -H "Auth: Bearer USER_TOKEN"</span>
+
+<span class="error">❌ 401 Unauthorized</span>
+{
+  "error": "Service token required"
+}
+
+<span class="success">✅ ATAQUE BLOQUEADO</span>
+<span class="success">   PROTEGIDO!</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overlay Central -->
+            <div class="overlay-box">
+                <h3 style="text-align: center; font-size: 2.5rem; color: #60a5fa;">
+                    🛡️ DOBLE VALIDACIÓN = DOBLE SEGURIDAD
+                </h3>
+                <div style="margin-top: 2rem; font-size: 1.8rem;">
+                    <p><strong>Necesitas DOS tokens:</strong></p>
+                    <p>1️⃣ User Token (del usuario)</p>
+                    <p>2️⃣ Service Token (del BFF)</p>
+                    <p style="margin-top: 2rem; color: #10b981;">
+                        <strong>Un atacante con solo el user token NO PUEDE hacer nada</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: CIERRE -->
+        <div class="slide" id="slide-5">
+            <div style="text-align: center;">
+                <h2>BFF: Tu Capa de Seguridad Esencial</h2>
+
+                <div class="grid-2" style="margin: 4rem auto; max-width: 1200px;">
+                    <div class="highlight-box">
+                        <span class="checkmark">✅</span> 1 endpoint agregado
+                    </div>
+                    <div class="highlight-box">
+                        <span class="checkmark">✅</span> Doble validación
+                    </div>
+                    <div class="highlight-box">
+                        <span class="checkmark">✅</span> Microservicios protegidos
+                    </div>
+                    <div class="highlight-box">
+                        <span class="checkmark">✅</span> 6x más rápido
+                    </div>
+                </div>
+
+                <div style="margin-top: 5rem; font-size: 2rem;">
+                    <p style="color: #cbd5e1;">📦 Código completo en GitHub</p>
+                    <p style="color: #cbd5e1;">📝 Artículo en Hashnode</p>
+                    <p style="color: #cbd5e1;">🎨 Diagrama interactivo</p>
+                </div>
+
+                <p style="font-size: 2.5rem; margin-top: 4rem; color: #94a3b8;">
+                    @safernandez666
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide-number">
+        <span id="current-slide">1</span> / <span id="total-slides">5</span>
+    </div>
+
+    <div class="controls">
+        <button onclick="previousSlide()">← Anterior</button>
+        <button onclick="nextSlide()">Siguiente →</button>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = document.querySelectorAll('.slide').length;
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            if (n > totalSlides) currentSlide = totalSlides;
+            if (n < 1) currentSlide = 1;
+            
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[currentSlide - 1].classList.add('active');
+            
+            document.getElementById('current-slide').textContent = currentSlide;
+        }
+
+        function nextSlide() {
+            currentSlide++;
+            if (currentSlide > totalSlides) currentSlide = totalSlides;
+            showSlide(currentSlide);
+        }
+
+        function previousSlide() {
+            currentSlide--;
+            if (currentSlide < 1) currentSlide = 1;
+            showSlide(currentSlide);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            }
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                previousSlide();
+            }
+        });
+
+        // Initialize
+        showSlide(currentSlide);
+    </script>
+</body>
+</html>

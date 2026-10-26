@@ -1,0 +1,350 @@
+version: '3.8'
+
+# ================================================================
+# BFF Financial Security - Docker Compose
+# ================================================================
+# Este archivo orquesta todo el sistema:
+# - Keycloak (CIAM)
+# - 4 PostgreSQL databases (una por microservicio)
+# - 4 Microservicios (Saldo, Usuario, Préstamos, Tarjetas)
+# - BFF (Backend For Frontend)
+# - Frontend (React App)
+# ================================================================
+
+services:
+  # ============== KEYCLOAK (CIAM) ==============
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: bff-keycloak
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_DB=dev-file
+      - KC_HEALTH_ENABLED=true
+      - KC_METRICS_ENABLED=true
+      - KC_LOG_LEVEL=INFO
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm.json:ro
+      - keycloak-data:/opt/keycloak/data
+    command:
+      - start-dev
+      - --import-realm
+      - --health-enabled=true
+    ports:
+      - "8080:8080"
+    networks:
+      - bff-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  # ============== DATABASES ==============
+  
+  # Database: Saldo
+  postgres-saldo:
+    image: postgres:16-alpine
+    container_name: bff-postgres-saldo
+    environment:
+      - POSTGRES_DB=saldo_db
+      - POSTGRES_USER=saldo_user
+      - POSTGRES_PASSWORD=saldo_pass_change_in_production
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8
+    volumes:
+      - ./database/init/01-saldo-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - postgres-saldo-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - bff-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U saldo_user -d saldo_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Database: Usuario
+  postgres-usuario:
+    image: postgres:16-alpine
+    container_name: bff-postgres-usuario
+    environment:
+      - POSTGRES_DB=usuario_db
+      - POSTGRES_USER=usuario_user
+      - POSTGRES_PASSWORD=usuario_pass_change_in_production
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8
+    volumes:
+      - ./database/init/02-usuario-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - postgres-usuario-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - bff-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U usuario_user -d usuario_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Database: Préstamos
+  postgres-prestamos:
+    image: postgres:16-alpine
+    container_name: bff-postgres-prestamos
+    environment:
+      - POSTGRES_DB=prestamos_db
+      - POSTGRES_USER=prestamos_user
+      - POSTGRES_PASSWORD=prestamos_pass_change_in_production
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8
+    volumes:
+      - ./database/init/03-prestamos-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - postgres-prestamos-data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    networks:
+      - bff-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prestamos_user -d prestamos_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Database: Tarjetas
+  postgres-tarjetas:
+    image: postgres:16-alpine
+    container_name: bff-postgres-tarjetas
+    environment:
+      - POSTGRES_DB=tarjetas_db
+      - POSTGRES_USER=tarjetas_user
+      - POSTGRES_PASSWORD=tarjetas_pass_change_in_production
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8
+    volumes:
+      - ./database/init/04-tarjetas-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - postgres-tarjetas-data:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+    networks:
+      - bff-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tarjetas_user -d tarjetas_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============== MICROSERVICES ==============
+  
+  # Microservice: Saldo
+  saldo-service:
+    build:
+      context: ./src/microservices/saldo-service
+      dockerfile: Dockerfile
+    container_name: bff-saldo-service
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DATABASE_URL=postgresql://saldo_user:saldo_pass_change_in_production@postgres-saldo:5432/saldo_db
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=financial-banking
+      - KEYCLOAK_CLIENT_ID=saldo-service
+      - KEYCLOAK_CLIENT_SECRET=saldo-secret
+      - SERVICE_NAME=saldo-service
+      - LOG_LEVEL=info
+    volumes:
+      - ./certs/services/saldo:/app/certs:ro
+    depends_on:
+      postgres-saldo:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    networks:
+      - bff-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # Microservice: Usuario
+  usuario-service:
+    build:
+      context: ./src/microservices/usuario-service
+      dockerfile: Dockerfile
+    container_name: bff-usuario-service
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+      - DATABASE_URL=postgresql://usuario_user:usuario_pass_change_in_production@postgres-usuario:5432/usuario_db
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=financial-banking
+      - KEYCLOAK_CLIENT_ID=usuario-service
+      - KEYCLOAK_CLIENT_SECRET=usuario-secret
+      - SERVICE_NAME=usuario-service
+      - LOG_LEVEL=info
+    volumes:
+      - ./certs/services/usuario:/app/certs:ro
+    depends_on:
+      postgres-usuario:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    networks:
+      - bff-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # Microservice: Préstamos
+  prestamos-service:
+    build:
+      context: ./src/microservices/prestamos-service
+      dockerfile: Dockerfile
+    container_name: bff-prestamos-service
+    environment:
+      - NODE_ENV=development
+      - PORT=3003
+      - DATABASE_URL=postgresql://prestamos_user:prestamos_pass_change_in_production@postgres-prestamos:5432/prestamos_db
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=financial-banking
+      - KEYCLOAK_CLIENT_ID=prestamos-service
+      - KEYCLOAK_CLIENT_SECRET=prestamos-secret
+      - SERVICE_NAME=prestamos-service
+      - LOG_LEVEL=info
+    volumes:
+      - ./certs/services/prestamos:/app/certs:ro
+    depends_on:
+      postgres-prestamos:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    networks:
+      - bff-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # Microservice: Tarjetas
+  tarjetas-service:
+    build:
+      context: ./src/microservices/tarjetas-service
+      dockerfile: Dockerfile
+    container_name: bff-tarjetas-service
+    environment:
+      - NODE_ENV=development
+      - PORT=3004
+      - DATABASE_URL=postgresql://tarjetas_user:tarjetas_pass_change_in_production@postgres-tarjetas:5432/tarjetas_db
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=financial-banking
+      - KEYCLOAK_CLIENT_ID=tarjetas-service
+      - KEYCLOAK_CLIENT_SECRET=tarjetas-secret
+      - SERVICE_NAME=tarjetas-service
+      - LOG_LEVEL=info
+    volumes:
+      - ./certs/services/tarjetas:/app/certs:ro
+    depends_on:
+      postgres-tarjetas:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    networks:
+      - bff-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # ============== BFF (Backend For Frontend) ==============
+  bff:
+    build:
+      context: ./src/bff
+      dockerfile: Dockerfile
+    container_name: bff-main
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=financial-banking
+      - KEYCLOAK_BFF_CLIENT_ID=bff-banking
+      - KEYCLOAK_BFF_CLIENT_SECRET=bff-secret-change-in-production
+      - SALDO_SERVICE_URL=http://saldo-service:3001
+      - USUARIO_SERVICE_URL=http://usuario-service:3002
+      - PRESTAMOS_SERVICE_URL=http://prestamos-service:3003
+      - TARJETAS_SERVICE_URL=http://tarjetas-service:3004
+      - RATE_LIMIT_WINDOW_MS=900000
+      - RATE_LIMIT_MAX_REQUESTS=100
+      - CIRCUIT_BREAKER_THRESHOLD=0.5
+      - CIRCUIT_BREAKER_TIMEOUT=5000
+      - REQUEST_TIMEOUT=10000
+      - LOG_LEVEL=info
+      - ALLOWED_ORIGINS=http://localhost:5173,http://frontend:5173
+    volumes:
+      - ./certs/bff:/app/certs:ro
+    ports:
+      - "4000:4000"
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      saldo-service:
+        condition: service_healthy
+      usuario-service:
+        condition: service_healthy
+      prestamos-service:
+        condition: service_healthy
+      tarjetas-service:
+        condition: service_healthy
+    networks:
+      - bff-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # ============== FRONTEND ==============
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+    container_name: bff-frontend
+    environment:
+      - VITE_BFF_URL=http://localhost:4000
+      - VITE_KEYCLOAK_URL=http://localhost:8080
+      - VITE_KEYCLOAK_REALM=financial-banking
+      - VITE_KEYCLOAK_CLIENT_ID=frontend-banking
+    ports:
+      - "5173:5173"
+    depends_on:
+      - bff
+      - keycloak
+    networks:
+      - bff-network
+    stdin_open: true
+    tty: true
+
+# ============== NETWORKS ==============
+networks:
+  bff-network:
+    driver: bridge
+    name: bff-financial-network
+
+# ============== VOLUMES ==============
+volumes:
+  keycloak-data:
+    name: bff-keycloak-data
+  postgres-saldo-data:
+    name: bff-postgres-saldo-data
+  postgres-usuario-data:
+    name: bff-postgres-usuario-data
+  postgres-prestamos-data:
+    name: bff-postgres-prestamos-data
+  postgres-tarjetas-data:
+    name: bff-postgres-tarjetas-data

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¿Para Qué Sirve un BFF? - Una Historia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .slide-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            max-width: 1600px;
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 5.5rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #60a5fa, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            color: #60a5fa;
+            text-align: center;
+        }
+
+        p {
+            font-size: 2.2rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            color: #cbd5e1;
+        }
+
+        .subtitle {
+            font-size: 2.8rem;
+            color: #94a3b8;
+            margin-bottom: 4rem;
+            text-align: center;
+        }
+
+        .story-visual {
+            background: rgba(15, 23, 42, 0.6);
+            border: 3px solid #334155;
+            border-radius: 24px;
+            padding: 4rem;
+            margin: 3rem 0;
+            text-align: center;
+        }
+
+        .house {
+            font-size: 8rem;
+            margin: 2rem 0;
+        }
+
+        .doors {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .door {
+            background: rgba(239, 68, 68, 0.2);
+            border: 3px solid #ef4444;
+            border-radius: 16px;
+            padding: 2rem;
+            font-size: 4rem;
+        }
+
+        .door.safe {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+        }
+
+        .label {
+            font-size: 1.6rem;
+            color: #94a3b8;
+            margin-top: 1rem;
+        }
+
+        .guard {
+            font-size: 10rem;
+            margin: 2rem 0;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            margin: 3rem 0;
+        }
+
+        .scenario {
+            background: rgba(15, 23, 42, 0.6);
+            border: 4px solid;
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+        }
+
+        .scenario.bad {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .scenario.good {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .scenario h3 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .scenario .icon {
+            font-size: 8rem;
+            margin: 2rem 0;
+        }
+
+        .scenario p {
+            font-size: 1.8rem;
+        }
+
+        .flow {
+            background: rgba(96, 165, 250, 0.1);
+            border: 2px solid #60a5fa;
+            border-radius: 16px;
+            padding: 2rem 3rem;
+            margin: 1.5rem 0;
+            font-size: 2rem;
+            text-align: center;
+        }
+
+        .highlight {
+            background: rgba(96, 165, 250, 0.2);
+            border-left: 6px solid #60a5fa;
+            padding: 2.5rem;
+            margin: 3rem 0;
+            border-radius: 12px;
+            font-size: 2rem;
+        }
+
+        .benefits {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .benefit {
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px solid #10b981;
+            border-radius: 16px;
+            padding: 2rem;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .checkmark { color: #10b981; font-size: 2.5rem; }
+        .xmark { color: #ef4444; font-size: 2.5rem; }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        button {
+            background: #60a5fa;
+            color: white;
+            border: none;
+            padding: 1.2rem 2.5rem;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(96, 165, 250, 0.4);
+        }
+
+        .slide-number {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            font-size: 1.8rem;
+            color: #64748b;
+            z-index: 1000;
+        }
+
+        .arrow {
+            font-size: 4rem;
+            color: #60a5fa;
+            margin: 2rem 0;
+            display: block;
+            text-align: center;
+        }
+
+        .emphasis {
+            color: #60a5fa;
+            font-weight: 700;
+        }
+
+        .danger {
+            color: #ef4444;
+            font-weight: 700;
+        }
+
+        .success {
+            color: #10b981;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- SLIDE 1: INTRO -->
+        <div class="slide active" id="slide-1">
+            <div style="text-align: center;">
+                <div style="font-size: 8rem; margin-bottom: 2rem;">🏠</div>
+                <h1>¿Para Qué Sirve un BFF?</h1>
+                <p class="subtitle">Una Historia de Seguridad</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: EL PROBLEMA - Casa con 4 Puertas Abiertas -->
+        <div class="slide" id="slide-2">
+            <h2><span class="xmark">❌</span> La Casa Sin Portero</h2>
+            
+            <div class="story-visual">
+                <div class="house">🏠</div>
+                
+                <p style="font-size: 2.5rem; margin-bottom: 3rem;">
+                    Imagina una casa con <span class="emphasis">4 puertas abiertas</span>
+                </p>
+
+                <div class="doors">
+                    <div class="door">
+                        <div>🚪</div>
+                        <div class="label">Tu Dinero</div>
+                    </div>
+                    <div class="door">
+                        <div>🚪</div>
+                        <div class="label">Tus Datos</div>
+                    </div>
+                    <div class="door">
+                        <div>🚪</div>
+                        <div class="label">Documentos</div>
+                    </div>
+                    <div class="door">
+                        <div>🚪</div>
+                        <div class="label">Tarjetas</div>
+                    </div>
+                </div>
+
+                <p style="font-size: 2rem; margin-top: 3rem;">
+                    🔑 Llaves por todos lados
+                </p>
+            </div>
+
+            <div class="highlight">
+                <p style="text-align: center;">
+                    <span class="danger">Si alguien roba una llave, puede entrar a TODAS las habitaciones sin que nadie lo detenga.</span>
+                </p>
+            </div>
+
+            <p style="text-align: center; font-size: 2.5rem; margin-top: 3rem;">
+                Así funciona tu app <span class="danger">SIN un BFF</span>
+            </p>
+        </div>
+
+        <!-- SLIDE 3: LA SOLUCIÓN - El Portero -->
+        <div class="slide" id="slide-3">
+            <h2><span class="checkmark">✅</span> El Portero (BFF)</h2>
+
+            <div class="story-visual">
+                <div style="font-size: 8rem; margin-bottom: 2rem;">🏢</div>
+                
+                <div class="guard">👨‍💼</div>
+                
+                <p style="font-size: 2.5rem; margin: 2rem 0;">
+                    Un <span class="emphasis">portero de seguridad</span> en la única entrada
+                </p>
+            </div>
+
+            <div style="margin: 3rem 0;">
+                <div class="flow">
+                    1️⃣ Portero pregunta: <span class="emphasis">¿Quién eres?</span>
+                </div>
+                <div class="arrow">↓</div>
+                <div class="flow">
+                    2️⃣ Portero pregunta: <span class="emphasis">¿Tienes autorización de MI JEFE?</span>
+                </div>
+                <div class="arrow">↓</div>
+                <div class="flow" style="background: rgba(16, 185, 129, 0.2); border-color: #10b981;">
+                    <span class="success">✅ Ambas verificaciones pasadas → El portero entra por ti</span>
+                </div>
+            </div>
+
+            <div class="highlight">
+                <p style="text-align: center;">
+                    <strong>Tú nunca entras directamente. Todo pasa por el portero.</strong>
+                </p>
+                <p style="text-align: center; margin-top: 1.5rem;">
+                    Y lo mejor: <span class="success">el portero hace los 4 viajes a la vez y te trae todo junto</span>
+                </p>
+                <p style="text-align: center; font-size: 2.8rem; margin-top: 1rem;">
+                    <span class="emphasis">6x más rápido</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: LA PRUEBA - Ladrón Bloqueado -->
+        <div class="slide" id="slide-4">
+            <h2>🛡️ La Magia: Ladrón Bloqueado</h2>
+
+            <div class="comparison">
+                <!-- Sin Portero -->
+                <div class="scenario bad">
+                    <h3 style="color: #ef4444;">❌ Sin Portero</h3>
+                    <div class="icon">😈</div>
+                    <div style="font-size: 5rem; margin: 2rem 0;">🔑</div>
+                    <p><strong>Ladrón roba tu ID</strong></p>
+                    <div class="arrow">↓</div>
+                    <div style="font-size: 6rem; margin: 2rem 0;">🚪</div>
+                    <p><strong class="danger">Entra directamente</strong></p>
+                    <div class="arrow">↓</div>
+                    <div style="font-size: 6rem; margin: 2rem 0;">💰</div>
+                    <p style="font-size: 2.2rem;"><strong class="danger">Toma todo</strong></p>
+                    <p style="font-size: 2rem; margin-top: 2rem;">Juego terminado</p>
+                </div>
+
+                <!-- Con Portero -->
+                <div class="scenario good">
+                    <h3 style="color: #10b981;">✅ Con Portero (BFF)</h3>
+                    <div class="icon">😈</div>
+                    <div style="font-size: 5rem; margin: 2rem 0;">🔑</div>
+                    <p><strong>Ladrón roba tu ID</strong></p>
+                    <div class="arrow">↓</div>
+                    <div style="font-size: 6rem; margin: 2rem 0;">👨‍💼</div>
+                    <p><strong>Portero pregunta:</strong></p>
+                    <p style="font-size: 1.8rem; margin: 1rem 0;">¿Autorización del jefe?</p>
+                    <div class="arrow">↓</div>
+                    <div style="font-size: 6rem; margin: 2rem 0;">🚫</div>
+                    <p style="font-size: 2.5rem;"><strong class="success">BLOQUEADO</strong></p>
+                    <p style="font-size: 2rem; margin-top: 2rem;">No entra</p>
+                </div>
+            </div>
+
+            <div class="highlight" style="margin-top: 4rem;">
+                <p style="text-align: center; font-size: 2.5rem;">
+                    <span class="emphasis">ID robada es inútil</span> sin la autorización que solo tiene el portero
+                </p>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: CIERRE -->
+        <div class="slide" id="slide-5">
+            <div style="text-align: center;">
+                <div style="font-size: 10rem; margin-bottom: 2rem;">👨‍💼</div>
+                <h2>BFF: Tu Portero de Seguridad Digital</h2>
+
+                <p class="subtitle" style="margin-top: 3rem;">
+                    <strong>Esencial, no opcional</strong>
+                </p>
+
+                <div class="benefits" style="max-width: 1200px; margin: 4rem auto;">
+                    <div class="benefit">
+                        <span class="checkmark">✅</span> Una sola entrada
+                    </div>
+                    <div class="benefit">
+                        <span class="checkmark">✅</span> Doble verificación
+                    </div>
+                    <div class="benefit">
+                        <span class="checkmark">✅</span> Todo protegido
+                    </div>
+                    <div class="benefit">
+                        <span class="checkmark">✅</span> 6x más rápido
+                    </div>
+                </div>
+
+                <div style="margin-top: 5rem; font-size: 2rem; color: #94a3b8;">
+                    <p>BFF = Backend For Frontend</p>
+                    <p style="margin-top: 2rem;">📦 Código completo en GitHub</p>
+                    <p>📝 Artículo en Hashnode</p>
+                </div>
+
+                <p style="font-size: 2.5rem; margin-top: 4rem; color: #94a3b8;">
+                    @safernandez666
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide-number">
+        <span id="current-slide">1</span> / <span id="total-slides">5</span>
+    </div>
+
+    <div class="controls">
+        <button onclick="previousSlide()">← Anterior</button>
+        <button onclick="nextSlide()">Siguiente →</button>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = document.querySelectorAll('.slide').length;
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            if (n > totalSlides) currentSlide = totalSlides;
+            if (n < 1) currentSlide = 1;
+            
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[currentSlide - 1].classList.add('active');
+            
+            document.getElementById('current-slide').textContent = currentSlide;
+        }
+
+        function nextSlide() {
+            currentSlide++;
+            if (currentSlide > totalSlides) currentSlide = totalSlides;
+            showSlide(currentSlide);
+        }
+
+        function previousSlide() {
+            currentSlide--;
+            if (currentSlide < 1) currentSlide = 1;
+            showSlide(currentSlide);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            }
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                previousSlide();
+            }
+        });
+
+        // Initialize
+        showSlide(currentSlide);
+    </script>
+</body>
+</html>

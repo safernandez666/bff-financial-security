@@ -1,0 +1,26 @@
+90-second Spanish explainer video about "BFF (Backend For Frontend)" using a house and security guard metaphor.
+
+STYLE: Modern flat design, dark blue gradient background (#0f172a to #1e293b), clean icons, smooth transitions, professional tech aesthetic. 16:9 aspect ratio.
+
+SCENE 1 (0-30s): THE PROBLEM
+Visual: House 🏠 with 4 open doors 🚪🚪🚪🚪 (red outline), labeled "Tu Dinero", "Tus Datos", "Documentos", "Tarjetas". Keys 🔑 floating everywhere. Thief 😈 walks through easily. Red danger colors.
+Narration (Spanish): "Imagina una casa con 4 puertas abiertas y llaves por todos lados. Si alguien roba una llave, puede entrar a todas las habitaciones. Así funciona tu app sin un BFF."
+Text: "❌ Sin BFF = Vulnerable"
+
+SCENE 2 (30-60s): THE SOLUTION  
+Visual: Building 🏢 with ONE entrance. Security guard 👨‍💼 at door. Two speech bubbles: "¿Quién eres?" and "¿Autorización del jefe?". Guard enters, brings 4 boxes 📦. Blue/green safe colors.
+Narration: "Con un BFF, tienes un portero que hace DOS preguntas. Solo si pasas ambas, él entra por ti y trae todo junto. 6x más rápido."
+Text: "✅ Doble verificación" "6x MÁS RÁPIDO"
+
+SCENE 3 (60-85s): THE PROOF
+Visual: SPLIT SCREEN - LEFT (red): Thief 😈 + key 🔑 → enters door → takes money 💰. Text "VULNERABLE". RIGHT (green): Same thief → guard 👨‍💼 blocks with "¿Autorización?" → STOP 🚫. Text "BLOQUEADO".
+Narration: "Un ladrón roba tu ID. Sin portero: entra y toma todo. Con portero: bloqueado porque no tiene autorización del jefe."
+Text: "🛡️ ID robada es INÚTIL sin autorización del BFF"
+
+SCENE 4 (85-90s): CLOSING
+Visual: Guard 👨‍💼 centered. Text: "BFF: Tu Portero de Seguridad Digital", "Esencial, no opcional", "@safernandez666"
+Narration: "BFF: tu portero de seguridad digital. Esencial, no opcional."
+
+AUDIO: Spanish neutral accent, conversational tone, soft corporate music (low volume), subtle sound effects.
+
+PACING: Moderate speed, clear pronunciation, 0.5s pauses after key phrases, emphasize "DOS verificaciones", "BLOQUEADO", "6x más rápido".
