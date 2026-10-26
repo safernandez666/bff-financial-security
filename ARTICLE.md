@@ -6,6 +6,12 @@ La seguridad en aplicaciones modernas es crítica, especialmente cuando manejas 
 
 > **🎯 Este patrón aplica a cualquier aplicación moderna**: e-commerce, fintech, salud, SaaS, IoT, gaming, logística, etc. La arquitectura y las capas de seguridad son las mismas, solo cambian los dominios de negocio.
 
+## 📦 Recursos
+
+- **🔗 Repositorio en GitHub**: [bff-financial-security](https://github.com/safernandez666/bff-financial-security)
+- **🏗️ Diagrama de Arquitectura Interactivo**: [Ver arquitectura completa](https://htmlpreview.github.io/?https://github.com/safernandez666/bff-financial-security/blob/main/diagrams/01-architecture-overview.html)
+- **📖 Código Completo**: Todo el código fuente, scripts de setup, certificados y configuración Docker están en el repositorio
+
 ## 🎯 El Problema
 
 Imagina una aplicación moderna con arquitectura de microservicios. Podría ser:
@@ -88,6 +94,8 @@ El sistema que vamos a construir tiene:
 ### Diagrama de Arquitectura
 
 ![Arquitectura BFF con Seguridad Multicapa](https://cdn.hashnode.com/uploads/gql/65c385adb3ed131c0c948bd1/8bb45c7c-d58d-4d49-8c46-c15215734a3c.png)
+
+> 🔗 **[Ver diagrama interactivo completo aquí](https://htmlpreview.github.io/?https://github.com/safernandez666/bff-financial-security/blob/main/diagrams/01-architecture-overview.html)** - Explora la arquitectura con zoom y tooltips
 
 El diagrama muestra:
 - Frontend SPA (React + Keycloak.js)
